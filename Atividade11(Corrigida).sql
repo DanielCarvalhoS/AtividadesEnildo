@@ -1,6 +1,7 @@
 create database dbDistribuidora;
 use dbDistribuidora;
 
+
 create table tbEstado(
 UFId int auto_increment primary key,
 UF char(2) not null
@@ -234,6 +235,7 @@ end $$
 
 DELIMITER ;
 
+
 call inserir_endereco('Rua da Federal', 'Lapa', 'São Paulo', 'SP', 12345050);
 call inserir_endereco('Av Brasil Lapa', 'Lapa', 'Campinas', 'SP', 12345051);
 call inserir_endereco('Rua Liberdade', 'Consolação', 'São Paulo', 'SP', 12345052);
@@ -245,11 +247,10 @@ call inserir_endereco('Rua Pão na Chapa', 'Barra Funda' , 'Ponta Grossa', 'RS',
 
 
 -- Exercício 7
-
-
 DELIMITER $$
 
 create procedure inserir_clientespf(
+pId int,
 pNomeCli varchar(200),
 pNumEnd decimal(6,0),
 pCompEnd varchar(50),
@@ -265,49 +266,45 @@ pNasc date)
 begin
 
 -- Se o CEP informado ainda não está na tabela de endereços, então insira esse endereço.
-if not exists (select * from tbEndereco where id_Cep = pCep) then
+if not exists (select 1 from tbEndereco where id_Cep = pCep) then
 call inserir_endereco(pLogradouro, pBairro, pCidade, pUF, pCep);
 end if;
 
-insert into tbCliente (NomeCli, NumEnd, CompEnd, CepCli, id)
-values (pNomeCli, pNumEnd, pCompEnd, pCep, id);
+insert into tbCliente (Id, NomeCli, NumEnd, CompEnd, CepCli)
+values (pId, pNomeCli, pNumEnd, pCompEnd, pCep);
 
--- MAX pega o maior valor de uma coluna. Usamos esse maior valor para descobrir qual cliente foi cadastrado por último.
 insert into tbClientePF (id, id_CPF, RG, RG_Dig, Nasc)
-values (id, pCPF, pRG, pRGDig, pNasc);
-    
-end $$
+values (pId, pCPF, pRG, pRGDig, pNasc);
 
+end $$
 DELIMITER ;
 
-select * from tbClientePF;
-
 call inserir_clientespf(
-'Pimpão', 325, NULL,
+1, 'Pimpão', 325, NULL,
 'Av Brasil', 'Lapa', 'Campinas', 'SP', 12345051,
 12345678911, 12345678, '0', '2000-10-12'
 );
 
 call inserir_clientespf(
-'Disney Chaplin', 89, 'Ap. 12',
+2, 'Disney Chaplin', 89, 'Ap. 12',
 'Av Paulista', 'Penha', 'Rio de Janeiro', 'RJ', 12345053,
 12345678912, 12345679, '0', '2001-11-21'
 );
 
 call inserir_clientespf(
-'Marciano', 744, NULL,
+3, 'Marciano', 744, NULL,
 'Rua Ximbú', 'Penha', 'Rio de Janeiro', 'RJ', 12345054,
 12345678913, 12345680, '0', '2001-06-01'
 );
 
 call inserir_clientespf(
-'Lança Perfume', 128, NULL,
+4, 'Lança Perfume', 128, NULL,
 'Rua Veia', 'Jardim Santa Isabel', 'Cuiabá', 'MT', 12345059,
 12345678914, 12345681, 'X', '2004-04-05'
 );
 
 call inserir_clientespf(
-'Remédio Amargo', 2585, NULL,
+5, 'Remédio Amargo', 2585, NULL,
 'Av Nova', 'Jardim Santa Isabel', 'Cuiabá', 'MT', 12345058,
 12345678915, 12345682, '0', '2002-07-15'
 );
@@ -317,6 +314,7 @@ call inserir_clientespf(
 DELIMITER $$
 
 create procedure inserir_clientespj(
+pId int,
 pNomeCli varchar(200),
 pCNPJ decimal (14,0),
 pIE decimal (11,0),
@@ -329,47 +327,46 @@ pCidade varchar(200),
 pUF char(2))
 begin
 
-
-if not exists (select * from tbEndereco where id_Cep = pCep) then
+-- Se o CEP informado não existir, insere
+if not exists (select 1 from tbEndereco where id_Cep = pCep) then
 call inserir_endereco(pLogradouro, pBairro, pCidade, pUF, pCep);
 end if;
 
-insert into tbCliente (NomeCli, NumEnd, CompEnd, CepCli)
-values (pNomeCli, pNumEnd, pCompEnd, pCep);
+insert into tbCliente (Id, NomeCli, NumEnd, CompEnd, CepCli)
+values (pId, pNomeCli, pNumEnd, pCompEnd, pCep);
 
 insert into tbClientePJ (id, CNPJ, IE)
-values ((select max(id) from tbCliente), pCNPJ, pIE);
-    
-end $$
+values (pId, pCNPJ, pIE);
 
+end $$
 DELIMITER ;
 
 call inserir_clientespj(
-'Paganada', 12345678912345, 98765432198,
+6, 'Paganada', 12345678912345, 98765432198,
 12345051, 'Av Brasil', 159, Null, 'Lapa',
 'Campinas', 'SP'
 );
 
 call inserir_clientespj(
-'Caloteando', 12345678912346, 98765432199,
+7, 'Caloteando', 12345678912346, 98765432199,
 12345053, 'Av Paulista', 69, Null, 'Penha',
 'Rio de Janeiro', 'RJ'
 );
 
 call inserir_clientespj(
-'Semgrana', 12345678912347, 98765432100,
+8, 'Semgrana', 12345678912347, 98765432100,
 12345060, 'Rua dos Amores', 189, Null,
 'Sei Lá', 'Recife', 'PE'
 );
 
 call inserir_clientespj(
-'Cemreais', 12345678912348, 98765432101,
+9, 'Cemreais', 12345678912348, 98765432101,
 12345060, 'Rua dos Amores', 5024, 'Sala 23', 
 'Sei Lá', 'Recife', 'PE'
 );
 
 call inserir_clientespj(
-'Durango', 12345678912349, 98765432102,
+10, 'Durango', 12345678912349, 98765432102,
 12345060, 'Rua dos Amores', 1254, Null,
 'Sei Lá', 'Recife', 'PE'
 );
@@ -399,7 +396,7 @@ if FornecedorId is not null then
 
 
 -- Verifica se existe um produto cadastrado com o código de barras informado
-if exists (select * from tbProduto where CodigoBarras = pCodigoBarras) then
+if exists (select 1 from tbProduto where CodigoBarras = pCodigoBarras) then
 
 select count(*) into ExisteNotaId from tbCompra where NotaFiscal = pNotaFiscal;
 
@@ -461,8 +458,8 @@ begin
 declare ValorProduto decimal (8,2);
 declare IdCliente int;
 
-if exists(select * from tbCliente where NomeCli = pCliente)
-and exists(select * from tbProduto where CodigoBarras = pCodigoBarras)
+if exists(select 1 from tbCliente where NomeCli = pCliente)
+and exists(select 1 from tbProduto where CodigoBarras = pCodigoBarras)
 then
 
 set IdCliente = (select Id from tbCliente where NomeCli = pCliente);
@@ -499,15 +496,15 @@ select Id into IdCliente from tbCliente where NomeCli = pClienteNota;
 
 if IdCliente is not null then 
 
-/*if exists (select * from tbCliente where NomeCli = IdCliente) then
+/*if exists (select 1 from tbCliente where NomeCli = IdCliente) then
 set IdCliente = (select Id from tbCliente where NomeCli = pClienteNota);*/
 
 -- Sum calcula a soma de um conjunto de valores.
-if exists (select * from tbVenda where id_Cli = IdCliente) then 
-select sum(TotalVenda) into TotalNota from tbVenda where id_Cli = IdCliente;
+if exists (select 1 from tbVenda where Id_Cli = IdCliente) then 
+select sum(TotalVenda) into TotalNota from tbVenda where Id_Cli = IdCliente;
 
-insert into tbNota_Fiscal(NF, DataEmissao, TotalNota)
-values(pNF, curdate(), TotalNota);
+insert into tbNota_Fiscal(NF, DataEmissao, TotalNota, Id_Cli)
+values(pNF, curdate(), TotalNota, IdCliente);
 
 end if; 
 end if;
@@ -524,9 +521,9 @@ call inserir_notafiscal(360, 'Lança Perfume');
 
 
 -- Exercício 12
-/*DELIMITER $$
+DELIMITER $$
 
-create procedure inserir_produto2(
+create procedure inserir_produto(
 pCodigoBarras decimal(14,0),
 pNome varchar(200),
 pValorUnit decimal(8,2),
@@ -545,7 +542,7 @@ end if;
 end $$
 
 
-DELIMITER ;*/
+DELIMITER ;
 
 call inserir_produto(12345678910130, 'Camiseta de Poliéster', 35.61, 100);
 call inserir_produto(12345678910131, 'Blusa Frio Moletom', 200.00, 100);
@@ -558,7 +555,7 @@ DELIMITER $$
 create procedure apagar_produto(pCodigoBarras decimal(14,0))
 begin
 
-if exists (select * from tbProduto where CodigoBarras = pCodigoBarras) then
+if exists (select 1 from tbProduto where CodigoBarras = pCodigoBarras) then
 
 delete from tbProduto
 where CodigoBarras = pCodigoBarras;
@@ -582,7 +579,7 @@ pValorUnitario decimal(8,2)
 )
 begin
 
-if exists (select * from tbProduto where CodigoBarras = pCodigoBarras) then
+if exists (select 1 from tbProduto where CodigoBarras = pCodigoBarras) then
 
 update tbProduto
 set Nome = pNome, Valor = pValorUnitario
@@ -610,7 +607,7 @@ DELIMITER ;
 
 call mostrar_produtos;
 
-/*show tables;
+show tables;
 select * from tbEndereco;
 select * from tbProduto;
 select * from tbCliente;
