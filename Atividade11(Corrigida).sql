@@ -503,8 +503,8 @@ set IdCliente = (select Id from tbCliente where NomeCli = pClienteNota);*/
 if exists (select 1 from tbVenda where Id_Cli = IdCliente) then 
 select sum(TotalVenda) into TotalNota from tbVenda where Id_Cli = IdCliente;
 
-insert into tbNota_Fiscal(NF, DataEmissao, TotalNota, Id_Cli)
-values(pNF, curdate(), TotalNota, IdCliente);
+insert into tbNota_Fiscal(NF, DataEmissao, TotalNota)
+values(pNF, curdate(), TotalNota);
 
 end if; 
 end if;
@@ -523,7 +523,7 @@ call inserir_notafiscal(360, 'Lança Perfume');
 -- Exercício 12
 DELIMITER $$
 
-create procedure inserir_produto(
+create procedure inserir_produto2(
 pCodigoBarras decimal(14,0),
 pNome varchar(200),
 pValorUnit decimal(8,2),
